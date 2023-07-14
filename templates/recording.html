@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Recorder</title>
+</head>
+<body>
+    <button id="startButton">Start Recording</button>
+    <button id="stopButton" disabled>Stop Recording</button>
+    <a id="downloadLink" href="#" download="recording.wav" style="display: none;">Download Recording</a>
+
+    <script>
+        // Variables for audio recording
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        // Get access to the microphone
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(function(stream) {
+                // Create the MediaRecorder instance
+                mediaRecorder = new MediaRecorder(stream);
+
+                // Event handler for dataavailable event
+                mediaRecorder.addEventListener('dataavailable', function(e) {
+                    recordedChunks.push(e.data);
+                });
+
+                // Event handler for stop event
+                mediaRecorder.addEventListener('stop', function() {
+                    // Create a Blob from the recorded chunks
+                    const blob = new Blob(recordedChunks, { type: 'audio/wav' });
+
+                    // Create a download link and set the Blob as the href
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = URL.createObjectURL(blob);
+
+                    // Show the download link
+                    downloadLink.style.display = 'block';
+
+                    // Reset the recordedChunks array
+                    recordedChunks = [];
+                });
+            })
+            .catch(function(err) {
+                console.error('Error accessing the microphone: ', err);
+            });
+
+        // Event handler for start button click
+        document.getElementById('startButton').addEventListener('click', function() {
+            // Start recording
+            mediaRecorder.start();
+
+            // Disable start button and enable stop button
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('stopButton').disabled = false;
+        });
+
+        // Event handler for stop button click
+        document.getElementById('stopButton').addEventListener('click', function() {
+            // Stop recording
+            mediaRecorder.stop();
+
+            // Disable stop button and enable start button
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('stopButton').disabled = true;
+        });
+    </script>
+</body>
+</html>
